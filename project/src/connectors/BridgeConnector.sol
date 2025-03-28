@@ -3,7 +3,6 @@ pragma solidity ^0.8.17;
 
 import { Errors } from "../lib/Errors.sol";
 import { ICore } from "../interfaces/ICore.sol";
-import { console } from "forge-std/console.sol";
 import { IBridge } from "../interfaces/IBridge.sol";
 
 contract BridgeConnector {
@@ -11,8 +10,6 @@ contract BridgeConnector {
     // ─────────────── External Functions ───────────────
     function deposit(address token, address toAccount, uint256 amount, address bridge) external {
         string memory targetChainAddress = _addressToString(toAccount);
-        console.log("toAccount: %s", toAccount);
-        console.log("targetChainAddress: %s", targetChainAddress);
         IBridge(bridge).deposit(token, amount, targetChainAddress);
     }
 

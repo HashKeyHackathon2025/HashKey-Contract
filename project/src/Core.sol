@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
+import { console } from "forge-std/console.sol";
+
 // ─────────────── External Imports ───────────────
 import { Initializable } from "solady/utils/Initializable.sol";
 import { LibClone } from "solady/utils/LibClone.sol";
@@ -103,10 +105,22 @@ contract Core is Ownable, Initializable, ICore {
     function excuteBridgeCall(uint256 telegramId, bytes memory _data) external onlyOwner {
         require(telegramId != 0, Errors.INVALID_TELEGRAM_ID);
         require(_connectors[BRIDGE] != address(0), Errors.INVALID_ADDRESS);
+        require(_registeredContracts[BRIDGE] != address(0), Errors.INVALID_ADDRESS);
 
         address account = accountByTelegramId[telegramId];
         require(account != address(0), Errors.USER_NOT_SET);
 
         IAccount(account).connectorCall(_connectors[BRIDGE], _data);
+    }
+
+    function excuteDexCall(uint256 telegramId, bytes memory _data) external onlyOwner {
+        require(telegramId != 0, Errors.INVALID_TELEGRAM_ID);
+        require(_connectors[DEX] != address(0), Errors.INVALID_ADDRESS);
+        require(_registeredContracts[DEX] != address(0), Errors.INVALID_ADDRESS);
+
+        address account = accountByTelegramId[telegramId];
+        require(account != address(0), Errors.USER_NOT_SET);
+
+        IAccount(account).connectorCall(_connectors[DEX], _data);
     }    
 }
