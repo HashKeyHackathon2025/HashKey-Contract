@@ -20,7 +20,6 @@ contract AccountImpl is Initializable, IAccount {
     // ─────────────── Events ───────────────
     event ClaimedTokens(address token, address owner, uint256 amount);
     event UserSet(address user);
-    event BridgeSwap(address indexed fromToken, address indexed toToken, uint256 amount);
 
     // ─────────────── State Variables ───────────────
     address private _owner;

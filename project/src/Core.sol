@@ -17,7 +17,6 @@ contract Core is Ownable, Initializable, ICore {
     using Clones for address;
 
     // ─────────────── Events ───────────────
-    event WalletCreated(uint256 telegramId, address wallet);
     event DEXSet(address dex);
     event BridgeSet(address bridge);
 
@@ -26,18 +25,17 @@ contract Core is Ownable, Initializable, ICore {
     bytes32 public constant BRIDGE = keccak256("BRIDGE");
 
     // ─────────────── State Variables ───────────────
-    mapping(uint256 => address) public walletByTelegramId;
-    mapping(address => uint256) public telegramIdByWallet;
+    mapping(uint256 => address) public accountByTelegramId;
+    mapping(address => uint256) public telegramIdByAccount;
     mapping(bytes32 => address) private _connectors;
 
     address public ACCOUNT_IMPL;
     address public connector;
-    address public immutable accountImplementation;
 
     // ─────────────── Constructor ───────────────
-    constructor(address _accountImplementation) Ownable() {
-        require(_accountImplementation != address(0), Errors.INVALID_ADDRESS);
-        accountImplementation = _accountImplementation;
+    constructor(address _accountImpl) {
+        require(_accountImpl != address(0), Errors.INVALID_ADDRESS);
+        ACCOUNT_IMPL = _accountImpl;
     }
 
     // ─────────────── External Functions ───────────────
@@ -53,8 +51,8 @@ contract Core is Ownable, Initializable, ICore {
         emit BridgeSet(_bridge);
     }
 
-    function createWallet(uint256 _telegramId) external onlyOwner {
-        require(walletByTelegramId[_telegramId] == address(0), Errors.WALLET_ALREADY_EXISTS);
+    function createAccount(uint256 _telegramId) external onlyOwner returns (address){
+        require(accountByTelegramId[_telegramId] == address(0), Errors.WALLET_ALREADY_EXISTS);
 
         address dex = _connectors[DEX];
         address bridge = _connectors[BRIDGE];
@@ -63,16 +61,14 @@ contract Core is Ownable, Initializable, ICore {
         address account = LibClone.cloneDeterministic(ACCOUNT_IMPL, keccak256(abi.encodePacked(_telegramId)));
         IAccount(account).initialize(address(this));
 
-        emit WalletCreated(_telegramId, account);
+        accountByTelegramId[_telegramId] = account;
+        telegramIdByAccount[account] = _telegramId;
+
+        return account;
     }
 
-    function initialize(address accountImpl) external initializer {
-        require(accountImpl != address(0), Errors.INVALID_ADDRESS);
-        ACCOUNT_IMPL = accountImpl;
-    }
-
-    function getWalletAddress(uint256 _telegramId) external view onlyOwner returns (address) {
-        return walletByTelegramId[_telegramId];
+    function getAccountAddress(uint256 _telegramId) external view onlyOwner returns (address) {
+        return accountByTelegramId[_telegramId];
     }
 
     function getDex() external view returns (address) {
