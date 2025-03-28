@@ -7,27 +7,24 @@ import { Initializable } from './dependencies/openzeppelin/upgradeability/Initia
 
 import { Errors } from './lib/Errors.sol';
 import { DataTypes } from './lib/DataTypes.sol';
-import { ConnectorsCall } from './lib/ConnectorsCall.sol';
 import { UniversalERC20 } from './lib/UniversalERC20.sol';
-
-import { IRouter } from './interfaces/IRouter.sol';
 import { IAccount } from './interfaces/IAccount.sol';
-import { IConnectors } from './interfaces/IConnectors.sol';
-import { IAddressesProvider } from './interfaces/IAddressesProvider.sol';
+import { IDEX } from './interfaces/IDEX.sol';
+import { IBridge } from './interfaces/IBridge.sol';
+import { ICore } from './interfaces/ICore.sol';
 
 contract Account is Initializable, IAccount {
     using UniversalERC20 for IERC20;
-    using ConnectorsCall for IAddressesProvider;
     using Address for address;
-
-    /* ============ Immutables ============ */
-    IAddressesProvider public immutable ADDRESSES_PROVIDER;
 
     /* ============ State Variables ============ */
     address private _owner;
+    address private _user;
+    address private _core;
 
     /* ============ Events ============ */
     event ClaimedTokens(address token, address owner, uint256 amount);
+    event UserSet(address user);
     event BridgeSwap(address indexed fromToken, address indexed toToken, uint256 amount, uint256 receiveAmount);
 
     /* ============ Modifiers ============ */
@@ -36,24 +33,21 @@ contract Account is Initializable, IAccount {
         _;
     }
 
+    modifier onlyUser() {
+        require(_user == msg.sender, Errors.CALLER_NOT_ACCOUNT_USER);
+        _;
+    }
+
     modifier onlyCallback() {
         require(msg.sender == address(this), Errors.CALLER_NOT_RECEIVER);
         _;
     }
 
-    modifier onlyRouter() {
-        require(msg.sender == address(ADDRESSES_PROVIDER.getRouter()), Errors.CALLER_NOT_ROUTER);
-        _;
-    }
-
     /* ============ Initializer ============ */
-    constructor(address provider) {
-        ADDRESSES_PROVIDER = IAddressesProvider(provider);
-    }
-
-    function initialize(address _user, IAddressesProvider _provider) public override initializer {
-        require(ADDRESSES_PROVIDER == _provider, Errors.INVALID_ADDRESSES_PROVIDER);
-        _owner = _user;
+    function initialize(address owner, address core) public override initializer {
+        require(owner != address(0) && core != address(0), Errors.INVALID_ADDRESS);
+        _owner = owner;
+        _core = core;
     }
 
     /* ============ External Functions ============ */
@@ -61,47 +55,47 @@ contract Account is Initializable, IAccount {
         return _owner;
     }
 
-    function executeBridgeSwap(
-        address _fromToken,
-        address _toToken,
-        uint256 _amount,
-        string memory _targetName,
-        bytes calldata _data
-    ) external onlyRouter returns (uint256) {
-        IERC20(_fromToken).universalTransferFrom(msg.sender, address(this), _amount);
-
-        uint256 receiveAmount = _swap(_targetName, _data);
-
-        emit BridgeSwap(_fromToken, _toToken, _amount, receiveAmount);
-        return receiveAmount;
+    function user() public view returns (address) {
+        return _user;
     }
 
-    function claimTokens(address _token, uint256 _amount) external override onlyOwner {
-        _amount = _amount == 0 ? IERC20(_token).universalBalanceOf(address(this)) : _amount;
-        IERC20(_token).universalTransfer(_owner, _amount);
-        emit ClaimedTokens(_token, _owner, _amount);
+    function setUser(address _newUser) external onlyOwner {
+        require(_newUser != address(0), Errors.INVALID_USER);
+        _user = _newUser;
+        emit UserSet(_newUser);
+    }
+
+    function executeBridgeDeposit(
+        address token,
+        uint256 amount,
+        string calldata targetChainAddress
+    ) external onlyOwner returns (uint256) {
+        address bridge = ICore(_core).getBridge();
+        IERC20(token).universalApprove(bridge, amount);
+        IBridge(bridge).deposit(token, amount, targetChainAddress);
+        return amount;
+    }
+
+    function executeSwap(
+        address fromToken,
+        address toToken,
+        uint256 amount,
+        bytes calldata data
+    ) external onlyOwner returns (uint256) {
+        address dex = ICore(_core).getDex();
+        IERC20(fromToken).universalApprove(dex, amount);
+        uint256 received = IDEX(dex).swap(fromToken, toToken, amount, data);
+        emit BridgeSwap(fromToken, toToken, amount, received);
+        return received;
+    }
+
+    function claimTokens(address _token, uint256 _amount) external override onlyUser {
+        require(_user != address(0), Errors.USER_NOT_SET);
+        uint256 amount = _amount == 0 ? IERC20(_token).universalBalanceOf(address(this)) : _amount;
+        IERC20(_token).universalTransfer(_user, amount);
+        emit ClaimedTokens(_token, _owner, amount);
     }
 
     // solhint-disable-next-line
     receive() external payable {}
-
-    /* ============ Private Functions ============ */
-    function _swap(string memory _name, bytes memory _data) private returns (uint256 value) {
-        bytes memory response = ADDRESSES_PROVIDER.connectorCall(_name, _data);
-        value = abi.decode(response, (uint256));
-    }
-
-    function isConnector(string memory _name) private view returns (address) {
-        address connectors = ADDRESSES_PROVIDER.getConnectors();
-        require(connectors != address(0), Errors.ADDRESS_IS_ZERO);
-
-        (bool isOk, address connector) = IConnectors(connectors).isConnector(_name);
-        require(isOk, Errors.NOT_CONNECTOR);
-
-        return connector;
-    }
-
-    function getRouter() private view returns (IRouter) {
-        return IRouter(ADDRESSES_PROVIDER.getRouter());
-    }
 }
