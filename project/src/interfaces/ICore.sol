@@ -9,4 +9,7 @@ interface ICore {
 
     /// @notice Returns the Bridge address registered in the system
     function getBridge() external view returns (address);
+
+    /// @notice Returns the Account address registered in the system
+    function getAccountImpl() external view returns (address);
 }

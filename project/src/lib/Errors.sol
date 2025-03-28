@@ -19,4 +19,14 @@ library Errors {
     string public constant CALLER_NOT_RECEIVER = '4';
     // The WALLET ALREADY EXISTS
     string public constant WALLET_ALREADY_EXISTS = '5';
+    // The CALLER IS NOT THE ACCOUNT OWNER
+    string public constant CALLER_NOT_ACCOUNT_OWNER = '6';
+    // The CALLER IS NOT THE ACCOUNT USER
+    string public constant CALLER_NOT_ACCOUNT_USER = '7';
+    // The CALLER IS NOT THE ACCOUNT RECEIVER
+    string public constant INVALID_USER = '8';
+    // The ADDRES IS ZERO
+    string public constant ZERO_ADDRESS = '9';
+    // The IMPLEMENTATION ADDRESS IS INVALID
+    string public constant INVALID_IMPLEMENTATION_ADDRESS = '10';
 }

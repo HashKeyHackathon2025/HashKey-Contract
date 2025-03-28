@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import { IAddressesProvider } from './interfaces/IAddressesProvider.sol';
+import { ICore } from './interfaces/ICore.sol';
 import { Errors } from './lib/Errors.sol';
 
 contract Proxy {
     // The contract by which all other contact addresses are obtained.
-    IAddressesProvider public immutable ADDRESSES_PROVIDER;
+    ICore public immutable CORE;
 
-    constructor(address _provider) {
-        ADDRESSES_PROVIDER = IAddressesProvider(_provider);
+    constructor(address _core) {
+        CORE = ICore(_core);
     }
 
     /**
@@ -48,7 +48,7 @@ contract Proxy {
      * This function does not return to its internal call site, it will return directly to the external caller.
      */
     function _fallback() internal {
-        address _implementation = ADDRESSES_PROVIDER.getAccountImpl();
+        address _implementation = CORE.getAccountImpl();
         require(_implementation != address(0), Errors.INVALID_IMPLEMENTATION_ADDRESS);
         _delegate(_implementation);
     }

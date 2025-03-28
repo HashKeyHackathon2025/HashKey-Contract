@@ -4,6 +4,6 @@ pragma solidity ^0.8.17;
 /// @title IDEX
 /// @notice Interface for the DEX contract
 interface IDEX {
-    /// @notice Executes a swap between two tokens
-    function swap(address _tokenIn, address _tokenOut, uint256 _amountIn, uint256 _amountOutMin, address _to) external;
+    /// @notice Executes a swap between two tokens fromToken, toToken, amount
+    function swap(address _fromToken, address _tokenOut, uint256 _amount) external;
 }
