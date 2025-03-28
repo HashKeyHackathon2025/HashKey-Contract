@@ -64,6 +64,12 @@ contract Core is Ownable, Initializable, ICore {
         _connectors[BRIDGE] = _connector;
     }
 
+    function setAccountUser(uint256 telegramId, address user) external onlyOwner {
+        address account = accountByTelegramId[telegramId];
+        require(account != address(0), Errors.USER_NOT_SET);
+        IAccount(account).setUser(user);
+    }
+
     function getDexConnector() external view returns (address) {
         return _connectors[DEX];
     }
@@ -122,5 +128,6 @@ contract Core is Ownable, Initializable, ICore {
         require(account != address(0), Errors.USER_NOT_SET);
 
         IAccount(account).connectorCall(_connectors[DEX], _data);
-    }    
+    }
+
 }
