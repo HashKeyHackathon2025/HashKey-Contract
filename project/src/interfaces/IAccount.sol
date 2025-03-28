@@ -1,18 +1,29 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.17;
 
-import { IAddressesProvider } from './IAddressesProvider.sol';
-
 interface IAccount {
-    function initialize(address _user, IAddressesProvider _provider) external;
+    /// @notice Initializes the account with owner and core address
+    function initialize(address owner) external;
 
-    function executeBridgeSwap(
-        address _fromToken,
-        address _toToken,
-        uint256 _amount,
-        string memory _targetName,
-        bytes calldata _data
-    ) external returns (uint256);
+    /// @notice Returns the account owner
+    function owner() external view returns (address);
 
-    function claimTokens(address _token, uint256 _amount) external;
+    /// @notice Returns the assigned user address
+    function user() external view returns (address);
+
+    /// @notice Sets the user address
+    function setUser(address newUser) external;
+
+    /// @notice Claims tokens from this account to the assigned user
+    /// @param token The token address
+    /// @param amount The amount to claim (0 means full balance)
+    function claimTokens(address token, uint256 amount) external;
+
+    /**
+     * @notice Executes a delegatecall to a specified connector contract with provided data.
+     * @param connector The address of the contract to delegatecall.
+     * @param data The calldata sent to the connector.
+     * @return The result of the delegatecall.
+     */
+    function connectorCall(address connector, bytes memory data) external returns (bytes memory);
 }
