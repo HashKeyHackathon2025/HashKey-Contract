@@ -63,30 +63,6 @@ contract AccountImpl is Initializable, IAccount {
         emit UserSet(_newUser);
     }
 
-    // function executeBridgeDeposit(
-    //     address token,
-    //     uint256 amount,
-    //     string calldata targetChainAddress
-    // ) external onlyOwner returns (uint256) {
-    //     address bridge = ICore(_core).getBridge();
-    //     IERC20(token).universalApprove(bridge, amount);
-    //     IBridge(bridge).deposit(token, amount, targetChainAddress);
-    //     return amount;
-    // }
-
-    // function executeSwap(
-    //     address fromToken,
-    //     address toToken,
-    //     uint256 amount,
-    //     bytes calldata data
-    // ) external onlyOwner returns (uint256) {
-    //     address dex = ICore(_core).getDex();
-    //     IERC20(fromToken).universalApprove(dex, amount);
-    //     IDEX(dex).swap(fromToken, toToken, amount);
-    //     emit BridgeSwap(fromToken, toToken, amount);
-    //     return amount;
-    // }
-
     function claimTokens(address _token, uint256 _amount) external override onlyUser {
         require(_user != address(0), Errors.USER_NOT_SET);
         uint256 amount = _amount == 0

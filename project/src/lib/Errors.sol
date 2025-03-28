@@ -29,4 +29,6 @@ library Errors {
     string public constant ZERO_ADDRESS = '9';
     // The IMPLEMENTATION ADDRESS IS INVALID
     string public constant INVALID_IMPLEMENTATION_ADDRESS = '10';
+    // The TELEGRAM ID IS INVALID
+    string public constant INVALID_TELEGRAM_ID = '11';
 }
