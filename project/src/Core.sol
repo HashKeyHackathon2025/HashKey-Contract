@@ -28,7 +28,7 @@ contract Core is Ownable, Initializable, ICore {
     // ─────────────── State Variables ───────────────
     mapping(uint256 => address) public walletByTelegramId;
     mapping(address => uint256) public telegramIdByWallet;
-    mapping(bytes32 => address) private _registry;
+    mapping(bytes32 => address) private _connectors;
 
     address public ACCOUNT_IMPL;
     address public connector;
@@ -43,21 +43,21 @@ contract Core is Ownable, Initializable, ICore {
     // ─────────────── External Functions ───────────────
     function setDEX(address _dex) external onlyOwner {
         require(_dex != address(0), Errors.INVALID_ADDRESS);
-        _registry[DEX] = _dex;
+        _connectors[DEX] = _dex;
         emit DEXSet(_dex);
     }
 
     function setBridge(address _bridge) external onlyOwner {
         require(_bridge != address(0), Errors.INVALID_ADDRESS);
-        _registry[BRIDGE] = _bridge;
+        _connectors[BRIDGE] = _bridge;
         emit BridgeSet(_bridge);
     }
 
     function createWallet(uint256 _telegramId) external onlyOwner {
         require(walletByTelegramId[_telegramId] == address(0), Errors.WALLET_ALREADY_EXISTS);
 
-        address dex = _registry[DEX];
-        address bridge = _registry[BRIDGE];
+        address dex = _connectors[DEX];
+        address bridge = _connectors[BRIDGE];
         require(dex != address(0) && bridge != address(0), Errors.INVALID_ADDRESS);
 
         address account = LibClone.cloneDeterministic(ACCOUNT_IMPL, keccak256(abi.encodePacked(_telegramId)));
@@ -76,24 +76,14 @@ contract Core is Ownable, Initializable, ICore {
     }
 
     function getDex() external view returns (address) {
-        return _registry[DEX];
+        return _connectors[DEX];
     }
 
     function getBridge() external view returns (address) {
-        return _registry[BRIDGE];
+        return _connectors[BRIDGE];
     }
 
     function getAccountImpl() external view returns (address) {
         return ACCOUNT_IMPL;
     }
-
-    function getConnector() external view returns (address) {
-        return connector;
-    }
-
-    function setConnector(address _connector) external onlyOwner {
-        require(_connector != address(0), Errors.INVALID_ADDRESS);
-        connector = _connector;
-    }
-    
 }

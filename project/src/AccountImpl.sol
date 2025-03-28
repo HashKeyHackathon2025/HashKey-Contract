@@ -9,16 +9,12 @@ import { Initializable } from "./dependencies/openzeppelin/upgradeability/Initia
 // ─────────────── Internal Imports ───────────────
 import { Errors } from "./lib/Errors.sol";
 import { ConnectorCall } from "./lib/ConnectorCall.sol";
-import { UniversalERC20 } from "./lib/UniversalERC20.sol";
 import { IAccount } from "./interfaces/IAccount.sol";
-import { IDEX } from "./interfaces/IDEX.sol";
-import { IBridge } from "./interfaces/IBridge.sol";
 import { ICore } from "./interfaces/ICore.sol";
 
 // ────────────────────────────────────────────────
 contract AccountImpl is Initializable, IAccount {
     using ConnectorCall for address;
-    using UniversalERC20 for IERC20;
     using Address for address;
 
     // ─────────────── Events ───────────────
@@ -95,9 +91,9 @@ contract AccountImpl is Initializable, IAccount {
     function claimTokens(address _token, uint256 _amount) external override onlyUser {
         require(_user != address(0), Errors.USER_NOT_SET);
         uint256 amount = _amount == 0
-            ? IERC20(_token).universalBalanceOf(address(this))
+            ? IERC20(_token).balanceOf(address(this))
             : _amount;
-        IERC20(_token).universalTransfer(_user, amount);
+        IERC20(_token).transfer(_user, amount);
         emit ClaimedTokens(_token, _owner, amount);
     }
 
