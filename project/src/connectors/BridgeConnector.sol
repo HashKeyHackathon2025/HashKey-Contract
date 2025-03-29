@@ -3,6 +3,7 @@ pragma solidity ^0.8.17;
 
 import { Errors } from "../lib/Errors.sol";
 import { ICore } from "../interfaces/ICore.sol";
+import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import { IBridge } from "../interfaces/IBridge.sol";
 
 contract BridgeConnector {
@@ -10,6 +11,7 @@ contract BridgeConnector {
     // ─────────────── External Functions ───────────────
     function deposit(address token, address toAccount, uint256 amount, address bridge) external {
         string memory targetChainAddress = _addressToString(toAccount);
+        IERC20(token).approve(bridge, amount);
         IBridge(bridge).deposit(token, amount, targetChainAddress);
     }
 
