@@ -31,11 +31,9 @@ contract AccountTest is BaseTest {
         address userEOA = makeAddr("userEOA");
         address account = core.accountByTelegramId(USER_TELEGRAMID);
 
-        // Set user via core (onlyOwner)
         vm.prank(DEV);
         core.setAccountUser(USER_TELEGRAMID, userEOA);
 
-        // Check that AccountImpl reflects the user
         assertEq(AccountImpl(payable(account)).user(), userEOA);
     }
 
