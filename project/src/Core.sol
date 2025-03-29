@@ -9,15 +9,13 @@ import { LibClone } from "solady/utils/LibClone.sol";
 
 // ─────────────── Internal Imports ───────────────
 import { Ownable } from "./dependencies/openzeppelin/contracts/Ownable.sol";
-import { Clones } from "./dependencies/openzeppelin/upgradeability/Clones.sol";
+import { Clones } from "./dependencies/openzeppelin/upgradeability/Clones.sol"; 
 import { IAccount } from "./interfaces/IAccount.sol";
 import { ICore } from "./interfaces/ICore.sol";
 import { Errors } from "./lib/Errors.sol";
 
 // ────────────────────────────────────────────────
 contract Core is Ownable, Initializable, ICore {
-    using Clones for address;
-
     // ─────────────── Events ───────────────
     event DEXSet(address dex);
     event BridgeSet(address bridge);

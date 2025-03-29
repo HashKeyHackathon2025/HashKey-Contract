@@ -7,9 +7,11 @@ optimizer = true
 optimizer_runs = 200
 
 [rpc_endpoints]
-hashkey_testnet = "https://hashkeychain-testnet.alt.technology"
+hashkey_testnet = "${HSK_RPC_URL}"
+sepolia = "${SEP_RPC_URL}"
 
 [profile.networks.hashkey_testnet]
 chain_id = 133
 
-# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
+[profile.networks.sepolia]
+chain_id = 11155111
